@@ -50,6 +50,10 @@ class PositionalEncoding(nn.Module):
         # We apply cos to every row and every odd column index
         pos_encoding[:, 1::2] = torch.cos(pos * factor_term)
 
+        # Because we only want to compute this positional encoding once, we want to register a buffer with it. This is
+        # because the pos_encoding matrix doesn't change at all, we just apply different number of rows to an input tensor x.
+        self.register_buffer("pos_encoding", pos_encoding.unsqueeze(0))
+
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
         Applies the positional encoding to the input x.
