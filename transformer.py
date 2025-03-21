@@ -177,9 +177,9 @@ class MultiHeadAttention(nn.Module):
         # Now let us finally actually compute the Q, K, and V matrices and immediately split these up into multiple heads.
 
         # Now you may ask: Why are these called Q, K, and V? These are abbreviations for Query, Key, and Value matrices.
-        # These terms come from the field of information retrieval. Let's consider these terms in the context of e.g.
+        # These terms come from the field of information retrieval. Let's consider these terms in the context of e.g. a
         # SQL Database: What you're looking for is the query (select id from users), what you're matching against is the
-        # key (the id is the primary key of the table users), and the rows you return is the value(s).
+        # key (the id is the primary key of the table users), and the rows you return are the value(s).
 
         # Now you might also ask: But these transformations are all applied to the same input x, how does that make sense?
         # Here's a great analogy I was taught: Think of this in the context of online dating.
