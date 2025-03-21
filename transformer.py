@@ -161,7 +161,7 @@ class MultiHeadAttention(nn.Module):
         # here we switch the order of dimensions from (batch_size, num_heads, seq_len, d_k) to
         # (batch_size, seq_len, num_heads, d_k) to prepare to squish the last two dimensions (through concatenation)
         x = x.permute(0, 2, 1, 3)
-        # We need to move the tensor to a contigous chunk of memory to make sure we can use view() on it properly
+        # We need to move the tensor to a contiguous chunk of memory to make sure we can use view() on it properly
         x = x.contiguous()
         # Finally, we squish the last two dimensions num_heads, d_k to d_model
         return x.view(batch_size, seq_len, self.d_model) # (batch_size, num_heads, d_model)
@@ -170,7 +170,7 @@ class MultiHeadAttention(nn.Module):
         """
         Compute a forward pass using multi-head attention.
         :param x: input tensor
-        :param mask: Optional mask tensor (e.g to enforce causality in the encoder)
+        :param mask: Optional mask tensor (e.g, to enforce causality in the encoder)
         :return:
         """
 
