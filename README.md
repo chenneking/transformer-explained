@@ -1,0 +1,1 @@
+This repo implements the Transformer Architecture as defined in Attention Is All You Need (Vaswani et al.). Specifically, the implementation includes lots of very detailed comments that I had questions for when first learning about the Transformer.
