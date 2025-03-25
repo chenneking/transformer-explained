@@ -1,4 +1,4 @@
-# An implementation of the (encoder-only) transformer architecture from the paper Attention Is All You Need (Vaswani et al.)
+# An implementation of the (decoder-only) transformer architecture from the paper Attention Is All You Need (Vaswani et al.)
 # Includes an extensive amount of comments to explain every single step in detail.
 
 # Import
