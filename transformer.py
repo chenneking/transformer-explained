@@ -71,7 +71,7 @@ Defines the logic used to do self-attention with multiple heads.
 We use multiple heads so that we can capture different aspects of relationships in the sequence, and we do this in parallel
 to make it more efficient.
 
-Now you might ask: Why isn't it enough to keep every encoder layer as a single "head" and just rely on the multiple 
+Now you might ask: Why isn't it enough to keep every decoder layer as a single "head" and just rely on the multiple 
 sequential layers to capture these relationships? 
 The two key reasons are: multiple heads make this process more efficient and more expressive: The individual heads are 
 computed in parallel, and a single head can only capture one relationship at a time. Since natural language contains many
@@ -170,7 +170,7 @@ class MultiHeadAttention(nn.Module):
         """
         Compute a forward pass using multi-head attention.
         :param x: input tensor
-        :param mask: Optional mask tensor (e.g, to enforce causality in the encoder)
+        :param mask: Optional mask tensor (e.g, to enforce causality in the decocder)
         :return:
         """
 
@@ -202,7 +202,7 @@ class MultiHeadAttention(nn.Module):
 
 
 """
-Defines the logic used in the Feed-Forward Networks used in every encoder block.
+Defines the logic used in the Feed-Forward Networks used in every decoder block.
 """
 class FeedForward(nn.Module):
     def __init__(self, d_model:int, d_ff:int):
@@ -228,18 +228,18 @@ class FeedForward(nn.Module):
         return x
 
 """
-Combines the previously defined components into a unified encoder layer
+Combines the previously defined components into a unified decoder layer
 """
-class EncoderLayer(nn.Module):
+class DecoderLayer(nn.Module):
     def __init__(self, d_model:int, d_ff:int, num_heads:int, dropout:float):
         """
-        Defines the encoder layer architecture.
+        Defines the decoder layer architecture.
         :param d_model: Model dimension (also embedding dimension)
         :param d_ff: Feed forward network hidden dimension (the dimension of the hidden state)
         :param num_heads: Number of attention heads used in multi-head attention.
         :param dropout: Dropout probability.
         """
-        super(EncoderLayer, self).__init__()
+        super(DecoderLayer, self).__init__()
         self.self_attn_masked = MultiHeadAttention(d_model, num_heads)
         self.norm1 = nn.LayerNorm(d_model)
         self.norm2 = nn.LayerNorm(d_model)
@@ -260,7 +260,7 @@ class EncoderLayer(nn.Module):
         # Reset the residual so that it can be used later on again
         residual = x
 
-        # Because we are using an encoder-only model, we don't have cross-attention and move right to the feed forward network
+        # Because we are using a decoder-only model, we don't have cross-attention and move right to the feed forward network
         # Apply the feedforward network
         x = self.feed_forward(x)
 
@@ -279,9 +279,9 @@ class Transformer(nn.Module):
         :param vocab_size: Size of the vocabulary.
         :param d_model: The embedding dimension used in the model.
         :param max_seq_len: The maximum length of the output sequence as measured in no. of tokens.
-        :param num_layers: The number of encoder layers.
-        :param num_heads: The number of attention heads we use in each encoder layer (multi-head attention).
-        :param d_ff: Hidden dimension of the feed-forward network in each encoder layer.
+        :param num_layers: The number of decoder layers.
+        :param num_heads: The number of attention heads we use in each decoder layer (multi-head attention).
+        :param d_ff: Hidden dimension of the feed-forward network in each decoder layer.
         :param dropout: Dropout probability of the attention heads.
         """
         super(Transformer, self).__init__()
@@ -289,12 +289,12 @@ class Transformer(nn.Module):
         # Include the positional encoding to use on the input tensor
         self.positional_encoding = PositionalEncoding(d_model, max_seq_len)
 
-        # Define the sequence of num_layers encoder layers
-        self.encoder_layers = nn.ModuleList(
-            [EncoderLayer(d_model, d_ff, num_heads, dropout) for _ in range(num_layers)]
+        # Define the sequence of num_layers decoder layers
+        self.decoder_layers = nn.ModuleList(
+            [DecoderLayer(d_model, d_ff, num_heads, dropout) for _ in range(num_layers)]
         )
 
-        # We want to learn a mapping from the output representation retrieved from the final encoder layer to the available
+        # We want to learn a mapping from the output representation retrieved from the final decoder layer to the available
         # next tokens available (our entire vocabulary)
         self.fc = nn.Linear(d_model, vocab_size)
 
@@ -302,11 +302,11 @@ class Transformer(nn.Module):
         # First, we apply the positional encoding to ensure the transformer can actually understand positional relationships
         x = self.positional_encoding(x) # (batch_size, seq_len, d_model)
 
-        # Next we pass the input through the set of encoder layers
-        for encoder in self.encoder_layers:
-            x = encoder(x, mask) # (batch_size, seq_len, d_model)
+        # Next we pass the input through the set of decoder layers
+        for decoder in self.decoder_layers:
+            x = decoder(x, mask) # (batch_size, seq_len, d_model)
 
-        # We pass the output from the final encoder layer to the final linear layer to get logits for the entire vocabulary
+        # We pass the output from the final decoder layer to the final linear layer to get logits for the entire vocabulary
         logits: torch.Tensor = self.fc(x) # (batch_size, seq_len, vocab_size)
         # And instead of returning the softmax over these logits, we return the raw logits as they're used to calculate
         # losses like the CrossEntropyLoss
